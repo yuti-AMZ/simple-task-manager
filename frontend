@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Friendly Task Manager</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e0f7fa;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+      margin: 0;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      width: 360px;
+      padding: 25px 20px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00796b;
+      margin-bottom: 20px;
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 15px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 2px solid #00796b;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #004d40;
+    }
+
+    button.add-btn {
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button.add-btn:hover {
+      background-color: #004d40;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      background: #b2dfdb;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s;
+    }
+
+    li.completed {
+      background: #80cbc4;
+      text-decoration: line-through;
+      color: #004d40;
+      cursor: default;
+    }
+
+    li:hover:not(.completed) {
+      background-color: #80cbc4;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #b71c1c;
+      cursor: pointer;
+      user-select: none;
+      padding: 0 6px;
+      transition: color 0.3s;
+    }
+
+    .delete-btn:hover {
+      color: #7f0000;
+    }
+
+    .empty-message {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Friendly Tasks</h1>
+    <div class="input-area">
+      <input type="text" id="taskInput" placeholder="Add a new task..." aria-label="Task input" />
+      <button class="add-btn" onclick="addTask()" aria-label="Add task">Add</button>
+    </div>
+    <ul id="taskList" aria-live="polite"></ul>
+    <p class="empty-message" id="emptyMsg" style="display: none;">No tasks yet. Add one above!</p>
+  </div>
+
+  <script>
+    let tasks = [
+      { id: 1, title: 'Buy groceries', completed: false },
+      { id: 2, title: 'Read a book', completed: true }
+    ];
+
+    const taskList = document.getElementById('taskList');
+    const taskInput = document.getElementById('taskInput');
+    const emptyMsg = document.getElementById('emptyMsg');
+
+    // Render tasks
+    function renderTasks() {
+      taskList.innerHTML = '';
+
+      if (tasks.length === 0) {
+        emptyMsg.style.display = 'block';
+        return;
+      }
+
+      emptyMsg.style.display = 'none';
+
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.className = task.completed ? 'completed' : '';
+        li.addEventListener('click', () => toggleCompleted(task.id));
+
+        const span = document.createElement('span');
+        span.textContent = task.title;
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '❌';
+        delBtn.className = 'delete-btn';
+        delBtn.setAttribute('aria-label', `Delete task: ${task.title}`);
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteTask(task.id);
+        };
+
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        taskList.appendChild(li);
+      });
+    }
+
+    // Add new task
+    function addTask() {
+      const title = taskInput.value.trim();
+      if (!title) return;
+
+      tasks.push({
+        id: Date.now(),
+        title,
+        completed: false
+      });
+
+      taskInput.value = '';
+      renderTasks();
+    }
+
+    // Toggle completed
+    function toggleCompleted(id) {
+      tasks = tasks.map(task =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      );
+      renderTasks();
+    }
+
+    // Delete task
+    function deleteTask(id) {
+      tasks = tasks.filter(task => task.id !== id);
+      renderTasks();
+    }
+
+    // Allow "Enter" key to add task
+    taskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        addTask();
+      }
+    });
+
+    // Initial render
+    renderTasks();
+  </script>
+</body>
+</html>
